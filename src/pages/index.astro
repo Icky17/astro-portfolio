@@ -1,0 +1,40 @@
+---
+import { info } from "@data";
+
+import Layout from "@layouts/Layout.astro";
+import Hero from "@components/home/Hero.astro";
+import Experience from "@components/home/Experience.astro";
+import FeatureProjects from "@components/general/FeatureProjects.astro";
+import MetaHead from "@components/general/MetaHead.astro";
+
+const projects = await Astro.glob("../posts/*.{md, mdx}");
+
+const featureProjects = projects.map((feature, index) => {
+  if (feature.frontmatter.isFeatured && index < 6) {
+    return feature.frontmatter;
+  }
+});
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <MetaHead
+      title={"Portfolio"}
+      description={info.about}
+      ogImageUrl={"/assets/images/profile.png"}
+    />
+  </head>
+
+  <body>
+    <Layout>
+      <Hero name={info.name} about={info.about} />
+      <Experience title={"EXPERIENCE"} details={info.experience} />
+      <Experience title={"EDUCATION"} details={info.education} />
+      <section>
+        <h2 class="w-[15rem] dark:text-light mt-16">FEATURE PROJECTS</h2>
+        <FeatureProjects projects={featureProjects} />
+      </section>
+    </Layout>
+  </body>
+</html>
