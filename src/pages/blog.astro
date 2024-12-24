@@ -1,0 +1,41 @@
+---
+import { info } from "@data";
+import Layout from "@layouts/Layout.astro";
+import BlogCard from "@components/general/BlogCard.astro";
+import SearchBar from "@components/blog/SearchBar.astro";
+import MetaHead from "@components/general/MetaHead.astro";
+
+const blogPosts = info.blog.sort((a, b) => 
+  new Date(b.date).getTime() - new Date(a.date).getTime()
+);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <MetaHead
+      title={"Blog"}
+      description={"Read my latest thoughts and insights"}
+      ogImageUrl={"/assets/images/profile.png"}
+    />
+  </head>
+
+  <body>
+    <Layout>
+      <h1 style="line-height: 1.2;">Blog</h1>
+      <SearchBar />
+      <div class="grid md:grid-cols-2 gap-12 my-16">
+        {blogPosts.map((post) => (
+          <div 
+            class="blog-post"
+            data-title={post.title}
+            data-description={post.description}
+            data-tags={JSON.stringify(post.tags)}
+          >
+            <BlogCard post={post} />
+          </div>
+        ))}
+      </div>
+    </Layout>
+  </body>
+</html>

@@ -35,3 +35,13 @@ export interface IProjects {
 export interface IProjectDetails {
   projectDetail: IProject;
 }
+
+export interface IBlogPost {
+  title: string;
+  description: string;
+  date: string;
+  thumbnail: string;
+  content?: string;
+  slug: string;
+  tags: string[];
+}

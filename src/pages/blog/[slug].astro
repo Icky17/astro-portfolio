@@ -1,0 +1,84 @@
+---
+import { info } from "@data";
+import Layout from "@layouts/Layout.astro";
+import MetaHead from "@components/general/MetaHead.astro";
+import TableOfContents from "@components/blog/TableOfContents.astro";
+import PostNavigation from "@components/blog/PostNavigation.astro";
+import type { IBlogPost } from "@types";
+import { marked } from 'marked';
+
+export async function getStaticPaths() {
+  return info.blog.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props as { post: IBlogPost };
+
+// Parse markdown content and extract headings
+const tokens = marked.lexer(post.content || '');
+const headings = tokens
+  .filter(token => token.type === 'heading')
+  .map(token => ({
+    depth: token.depth,
+    text: token.text,
+    slug: token.text.toLowerCase().replace(/[^\w]+/g, '-')
+  }));
+
+// Add IDs to headings in HTML
+const htmlContent = post.content?.replace(
+  /^(#{1,6})\s+(.+)$/gm,
+  (_, hashes, text) => {
+    const slug = text.toLowerCase().replace(/[^\w]+/g, '-');
+    return `${hashes} ${text} {#${slug}}`;
+  }
+);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <MetaHead
+      title={post.title}
+      description={post.description}
+      ogImageUrl={post.thumbnail}
+    />
+  </head>
+
+  <body>
+    <Layout>
+      <article class="max-w-3xl mx-auto py-8">
+        <img 
+          src={post.thumbnail} 
+          alt={post.title}
+          class="w-full h-[400px] object-cover rounded-xl mb-8"
+        />
+        <div class="flex gap-8">
+          <div class="prose dark:prose-invert max-w-none flex-1">
+            <h1 class="text-4xl font-bold mb-4 !mt-0">{post.title}</h1>
+            <div class="flex items-center gap-4 mb-8">
+              <time class="text-gray-500 dark:text-gray-400">
+                {new Date(post.date).toLocaleDateString()}
+              </time>
+              <div class="flex gap-2">
+                {post.tags.map(tag => (
+                  <span class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-sm">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div class="mt-8" set:html={marked(htmlContent || '')}></div>
+            <PostNavigation currentSlug={post.slug} />
+          </div>
+          <div class="w-64 hidden lg:block">
+            <div class="sticky top-8">
+              <TableOfContents headings={headings} />
+            </div>
+          </div>
+        </div>
+      </article>
+    </Layout>
+  </body>
+</html>

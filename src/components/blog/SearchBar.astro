@@ -1,0 +1,63 @@
+---
+---
+
+<div class="relative max-w-xl mx-auto mb-12">
+  <input
+    type="text"
+    id="search"
+    placeholder="Search posts..."
+    class="w-full px-4 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-dark-gray dark:text-light focus:outline-none focus:ring-2 focus:ring-blue"
+  />
+  <div id="tags" class="mt-4 flex flex-wrap gap-2">
+    <!-- Tags will be dynamically inserted here -->
+  </div>
+</div>
+
+<script>
+  let activeFilters = new Set();
+  
+  function filterPosts() {
+    const searchTerm = (document.getElementById('search') as HTMLInputElement).value.toLowerCase();
+    const posts = document.querySelectorAll('.blog-post');
+    
+    posts.forEach(post => {
+      const title = post.getAttribute('data-title')?.toLowerCase() || '';
+      const description = post.getAttribute('data-description')?.toLowerCase() || '';
+      const tags = JSON.parse(post.getAttribute('data-tags') || '[]');
+      
+      const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
+      const matchesTags = activeFilters.size === 0 || tags.some(tag => activeFilters.has(tag));
+      
+      post.classList.toggle('hidden', !matchesSearch || !matchesTags);
+    });
+  }
+
+  // Initialize tags
+  const posts = document.querySelectorAll('.blog-post');
+  const allTags = new Set();
+  posts.forEach(post => {
+    const tags = JSON.parse(post.getAttribute('data-tags') || '[]');
+    tags.forEach(tag => allTags.add(tag));
+  });
+
+  const tagsContainer = document.getElementById('tags');
+  allTags.forEach(tag => {
+    const button = document.createElement('button');
+    button.textContent = `#${tag}`;
+    button.className = 'px-3 py-1 rounded-full text-sm bg-gray-200 dark:bg-gray-700 hover:bg-blue hover:text-white transition-colors';
+    button.addEventListener('click', () => {
+      button.classList.toggle('bg-blue');
+      button.classList.toggle('text-white');
+      if (activeFilters.has(tag)) {
+        activeFilters.delete(tag);
+      } else {
+        activeFilters.add(tag);
+      }
+      filterPosts();
+    });
+    tagsContainer?.appendChild(button);
+  });
+
+  // Add search event listener
+  document.getElementById('search')?.addEventListener('input', filterPosts);
+</script>
